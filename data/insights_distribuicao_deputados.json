@@ -1,0 +1,12 @@
+{
+    "maior_concentracao": {
+        "partido": "PL",
+        "percentual": 18.1
+    },
+    "menor_concentracao": {
+        "partido": "S.PART.",
+        "percentual": 0.2
+    },
+    "total_partidos": 21,
+    "descricao": "A representatividade dos partidos políticos na câmara reflete a fragmentação e diversidade política do país, onde alguns partidos, como o PL, possuem maior influência, enquanto outros têm representações reduzidas. Essa distribuição pode impactar diretamente as coalizões e negociações políticas."
+}
