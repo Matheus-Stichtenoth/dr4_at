@@ -6,3 +6,4 @@ requests
 fastparquet
 google-generativeai
 python-dotenv
+streamlit

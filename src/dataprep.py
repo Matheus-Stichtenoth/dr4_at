@@ -186,3 +186,5 @@ def exercicio_5():
 
     # Exibindo o resumo final
     print(f'Resumo Final: {summary}')
+
+#alo
