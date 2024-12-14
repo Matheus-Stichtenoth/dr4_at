@@ -1,0 +1,20 @@
+{
+    "insights": [
+      {
+        "análise": "Análise 1: Foco na Despesa Média e na Distribuição Assimétrica",
+        "insight": "A média de despesa, apesar de parecer razoável (R$ 1790,56), é altamente enganosa devido à alta assimetria da distribuição.  A presença de outliers (valor máximo de R$ 130.000,00) e valores negativos (-R$ 2514,90) distorcem significativamente a média. A mediana (R$ 384,88), muito inferior à média, demonstra que a maior parte das despesas é consideravelmente menor, concentrando-se em poucos deputados gastos muito superiores. Isso mascara a desigualdade na distribuição das despesas."
+      },
+      {
+        "análise": "Análise 2: Ênfase no Tipo de Despesa Mais Frequente",
+        "insight": "A categoria 'MANUTENÇÃO DE ESCRITÓRIO DE APOIO À ATIVIDADE PARLAMENTAR', apesar de ser a mais frequente (4888 registros), é vaga e permite ocultar gastos excessivos ou mal direcionados. A falta de detalhamento sobre os itens incluídos (aluguel, contas básicas, itens de luxo) impede a avaliação da real destinação dos recursos, criando uma aparência superficial de transparência que mascara potenciais desvios."
+      },
+      {
+        "análise": "Análise 3: Manipulação da Informação Temporal",
+        "insight": "A ausência de detalhamento da distribuição temporal das despesas (181 datas únicas em 7633 registros) permite manipulação da narrativa.  A concentração de despesas em curtos períodos pode ser destacada para sugerir gastos excessivos, ou a distribuição pode ser apresentada como equilibrada, ignorando picos e vales que revelem padrões suspeitos.  A manipulação da visualização temporal facilita a criação de narrativas enganosas sobre a regularidade e magnitude das despesas."
+      },
+      {
+        "análise_geral": "Conclusão",
+        "insight": "As análises demonstram como a apresentação estratégica dos dados, mesmo sem falsificação, pode gerar interpretações enviesadas. Médias não representativas, omissão de detalhes relevantes e manipulação da informação temporal são técnicas que podem ser utilizadas para criar uma imagem distorcida da realidade das despesas dos deputados, comprometendo a transparência e favorecendo a propaganda."
+      }
+    ]
+  }

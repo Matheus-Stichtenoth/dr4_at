@@ -2,6 +2,11 @@ import pandas as pd
 import os
 import json
 import requests
+import seaborn as sns
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv('.env')
 
 url_api = "https://dadosabertos.camara.leg.br/api/v2/deputados"
 
@@ -65,19 +70,54 @@ ids = df_deputados['id'].unique()
 
 df_deputados_despesas = pd.DataFrame()
 
-# Limitar o loop para os primeiros 4 IDs como teste
-for id in range(len(ids)):
-    print(f'⚜ {ids[id]} - Lendo dados')
-    url_deputado = f'https://dadosabertos.camara.leg.br/api/v2/deputados/{ids[id]}/despesas'
-    response = requests.get(url_deputado)
-    data = response.json()
-    data_fixed = data.get("dados", [])
-    df_deputado = pd.DataFrame(data_fixed)
-    df_deputado = df_deputado[['tipoDespesa', 'dataDocumento']]
-    df_deputado['dataDocumento'] = pd.to_datetime(df_deputado['dataDocumento']).dt.date
-    df_deputado['id'] = ids[id]
+# for id in range(len(ids)):
+#     print(f'{id} / {len(ids)}')
+#     print(f'⚜ {ids[id]} - Lendo dados')
+#     url_deputado = f'https://dadosabertos.camara.leg.br/api/v2/deputados/{ids[id]}/despesas'
+#     response = requests.get(url_deputado)
+#     data = response.json()
+#     data_fixed = data.get("dados", [])
+#     df_deputado = pd.DataFrame(data_fixed)
+#     df_deputado['id'] = ids[id]
+#     df_deputado = df_deputado.merge(df_deputados, how='left', left_on='id', right_on='id')
+#     df_deputado = df_deputado[['tipoDespesa', 'dataDocumento','valorLiquido','nome','siglaPartido']]
+#     df_deputado['dataDocumento'] = pd.to_datetime(df_deputado['dataDocumento']).dt.date
     
-    # Atualizar o DataFrame acumulado
-    df_deputados_despesas = pd.concat([df_deputados_despesas, df_deputado], ignore_index=True)
+#     df_deputados_despesas = pd.concat([df_deputados_despesas, df_deputado], ignore_index=True)
 
-df_deputados_despesas.to_parquet('data/serie_despesas_diárias_deputados.parquet')
+# df_deputados_despesas.to_parquet('data/serie_despesas_diárias_deputados.parquet')
+
+df_deputados_despesas = pd.read_parquet('data/serie_despesas_diárias_deputados.parquet')
+
+summary = df_deputados_despesas.describe(include='all').to_string()
+
+prompt_analysis = f"""
+Você é um analista de dados sênior que trabalha na câmara dos deputados. Seu foco é em apresentar os dados mais distantes da realidade voltados à despesa dos deputados.
+Abaixo estão os dados relevantes:
+
+{summary}
+
+A partir dos dados apresentados, você deverá fazer 3 análises de acordo com o que achar melhor.
+Não quero que me retorne códigos como respostas, mas sim, a sua análise dos dados.
+Retorne como resposta um texto que comente sobre as 3 análises e os resultados obtidos por elas.
+"""
+
+print('▶ Gerando análises solicitadas...')
+# Definir a chave de API do Gemini (use a chave fornecida pela sua conta)
+genai.configure(api_key=os.environ["GEMINI_KEY"])
+model = genai.GenerativeModel("gemini-1.5-flash")
+response = model.generate_content(prompt_analysis)
+print(response.text)
+
+output_analysis = response.text
+
+print('💫 Gerando Insights a partir das análises geradas...')
+prompt_generated_knowledge = f"""
+A partir das análises criadas em {output_analysis}, gere insights sobre elas.
+Esses insights, deverão retornar em um formato que eu possa subir para um JSON. 
+Podem ser todos os insights em um único texto dentro desse JSON, para facilitar.
+"""
+genai.configure(api_key=os.environ["GEMINI_KEY"])
+model = genai.GenerativeModel("gemini-1.5-flash")
+response = model.generate_content(prompt_generated_knowledge)
+print(response.text)
