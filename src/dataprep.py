@@ -4,6 +4,7 @@ import json
 import requests
 import seaborn as sns
 import google.generativeai as genai
+from services.summarizer import ChunkSummary
 from dotenv import load_dotenv
 
 load_dotenv('.env')
@@ -130,36 +131,58 @@ def exercicio_4():
 #########ATIVIDADE 5#########
 #############################
 
-temas = [40,46,62]
+def exercicio_5():
+    temas = [40,46,62]
 
-df_proposicoes_all = pd.DataFrame()
+    df_proposicoes_all = pd.DataFrame()
 
-for i in range(len(temas)):
-    print(f'🧾 Iniciado tema  n° {temas[i]}')
-    url_dados_proposicoes = f'https://dadosabertos.camara.leg.br/api/v2/proposicoes?dataInicio=2024-01-01&codTema={temas[i]}&itens=10&ordem=ASC&ordenarPor=id'
-    response = requests.get(url_dados_proposicoes)
-    data = response.json()
-    data_fixed = data.get("dados", [])
-    df_proposicoes = pd.DataFrame(data_fixed)
-    df_proposicoes_all = pd.concat([df_proposicoes_all, df_proposicoes],ignore_index=True)
-    print('Tema Finalizado!')
+    for i in range(len(temas)):
+        print(f'🧾 Iniciado tema  n° {temas[i]}')
+        url_dados_proposicoes = f'https://dadosabertos.camara.leg.br/api/v2/proposicoes?dataInicio=2024-01-01&codTema={temas[i]}&itens=10&ordem=ASC&ordenarPor=id'
+        response = requests.get(url_dados_proposicoes)
+        data = response.json()
+        data_fixed = data.get("dados", [])
+        df_proposicoes = pd.DataFrame(data_fixed)
+        df_proposicoes_all = pd.concat([df_proposicoes_all, df_proposicoes],ignore_index=True)
+        print('Tema Finalizado!')
 
-print('')
+    print('')
 
-ids_proposicoes = df_proposicoes_all['id'].unique()
+    ids_proposicoes = df_proposicoes_all['id'].unique()
 
-proposicoes = []
+    proposicoes = []
+    df_ementa_proposicoes = pd.DataFrame()
 
-for i in range(len(ids_proposicoes)):
-    print(f'🧩 Iniciando Proposicao n° {ids_proposicoes[i]}')
-    url_proposicao = f'https://dadosabertos.camara.leg.br/api/v2/proposicoes/{ids_proposicoes[i]}'
-    response = requests.get(url_proposicao)
-    data = response.json()
-    data_fixed = data.get("dados", [])
-    proposicao = pd.DataFrame(data_fixed)
-    detalhamento_proposicao = proposicao['ementa'][0]
-    print(f'Proposicao: {detalhamento_proposicao}')
-    proposicoes.append(detalhamento_proposicao)
-    print('Proposicao Finalizada! \n')
+    for i in range(len(ids_proposicoes)):
+        print(f'🧩 Iniciando Proposicao n° {ids_proposicoes[i]}')
+        url_proposicao = f'https://dadosabertos.camara.leg.br/api/v2/proposicoes/{ids_proposicoes[i]}'
+        response = requests.get(url_proposicao)
+        data = response.json()
+        data_fixed = data.get("dados", [])
+        proposicao = pd.DataFrame(data_fixed)
+        proposicao = proposicao.drop(columns=['statusProposicao'])
+        detalhamento_proposicao = proposicao['ementa'][0]
+        print(f'Proposicao: {detalhamento_proposicao}')
+        df_ementa_proposicoes = pd.concat([df_ementa_proposicoes,proposicao], ignore_index=True)
+        proposicoes.append(detalhamento_proposicao)
+        print('Proposicao Finalizada! \n')
 
-print(proposicoes)
+    df_ementa_proposicoes.to_parquet('data/proposicoes_deputados.parquet')
+
+    USER_PROMPT = "Summarize all the chunks into a single cohesive summary."
+
+    # Criando uma instância do sumarizador
+    summarizer = ChunkSummary(
+        model_name='gemini-1.5-flash',
+        apikey=os.environ["GEMINI_KEY"],
+        text=proposicoes,
+        window_size=300,
+        overlap_size=50,
+        system_prompt='Você é um modelo que irá executar resumos eficientes de textos.'
+    )
+
+    # Gerando o resumo
+    summary = summarizer.summarize(USER_PROMPT)
+
+    # Exibindo o resumo final
+    print(f'Resumo Final: {summary}')
